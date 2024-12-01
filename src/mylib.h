@@ -50,11 +50,11 @@ void inspect_char_buffer(
     {
         fprintf(stderr, "%*zu ", iw, i);
         if (0 == *p)
-            fputs(" | ", stderr);
+            fputs("     ", stderr);
         else if ('\n' == *p)
-            fputs("---", stderr);
+            fputs("+---+", stderr);
         else
-            fprintf(stderr, "|%c|", *p);
+            fprintf(stderr, "| %c |", *p);
         fprintf(stderr, " %3i\n", (int)(*p));
     }
 }
