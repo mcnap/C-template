@@ -1,0 +1,6 @@
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: Microsoft
+ColumnLimit: 80
+
+AlignEscapedNewlines: Left
