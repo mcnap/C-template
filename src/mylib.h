@@ -13,11 +13,15 @@ void fatal(
     char const *const file_name,
     int const line_number)
 {
+    // If it weren't for this check, `perror' would print a misleading "Success".
     if (0 == errno)
         fprintf(stderr, "%s: Unknown error\n", func_name);
     else
         perror(func_name);
+
+    // Try to kill all processes whose process group ID is equal to ours.
     kill(0, SIGKILL);
+
     fprintf(stderr, "%s:%d\n", file_name, line_number);
     exit(EXIT_FAILURE);
 }
@@ -35,6 +39,7 @@ void inspect_char_buffer(
         return;
     }
 
+    // Fake a formatting operation to get the number of digits.
     int iw = snprintf(NULL, 0, "%zu", size);
     if (iw < 0)
         FATAL("snprintf");
