@@ -5,6 +5,7 @@
 #include <signal.h> // SIGKILL
 #include <stdio.h>  // fprintf, perror, ...
 #include <stdlib.h> // exit, strtol
+#include <string.h> // memset
 #include <unistd.h> // read, write
 
 // Use the `FATAL' macro for convenience.
@@ -132,4 +133,16 @@ ssize_t bulk_write(int const fd, char const *src, size_t count)
         src += curr;
     } while (count > 0);
     return total;
+}
+
+void set_signal_handler(
+    int const signal_kind,
+    void (* const new_handler)(int))
+{
+    struct sigaction act;
+    memset(&act, 0, sizeof(struct sigaction));
+    act.sa_handler = new_handler;
+    
+    if (sigaction(signal_kind, &act, NULL))
+        FATAL("sigaction");
 }
