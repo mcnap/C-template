@@ -135,6 +135,12 @@ ssize_t bulk_write(int const fd, char const *src, size_t count)
     return total;
 }
 
+void pid_signature(void)
+{
+    if (0 > printf("[%i] ", getpid()))
+        FATAL("printf");
+}
+
 void set_signal_handler(
     int const signal_kind,
     void (* const new_handler)(int))
