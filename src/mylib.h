@@ -141,6 +141,41 @@ void print_pid(void)
         FATAL("printf");
 }
 
+void handler_sigchld(int const sig)
+{
+    // BEHAVIOR OF `waitpid' ===================================================
+    //
+    // Child process available?
+    // => Return its PID.
+    //
+    // Child process exists, but not yet available?
+    // => If `WNOHANG' was passed, return 0 immediately.
+    //    Otherwise, block the current thread until a child becomes available.
+    //
+    // No unwaited child process exists at all?
+    // => Set `errno' to `ECHILD'.
+    // => Return -1.
+    //
+    // Other error?
+    // => Set `errno' appropriately.
+    //    (In particular `EINTR' if the call was interrupted by a signal.)
+    // => Return -1.
+    
+    pid_t pid;
+    for (;;)
+    {
+        pid = waitpid(0, NULL, WNOHANG);
+        if (pid > 0)
+            continue;
+        else if (0 == pid)
+            return;
+        else if (ECHILD == errno)
+            return;
+        else
+            FATAL("waitpid");
+    }
+}
+
 void set_signal_handler(
     int const signal_kind,
     void (* const new_handler)(int))
