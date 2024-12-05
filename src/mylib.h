@@ -1,11 +1,12 @@
 #define _GNU_SOURCE // `TEMP_FAILURE_RETRY'
-#include <ctype.h>  // isspace
-#include <errno.h>  // errno
+#include <ctype.h> // isspace
+#include <errno.h> // errno
 #include <limits.h> // INT_MAX, LONG_MAX
-#include <signal.h> // SIGKILL
-#include <stdio.h>  // fprintf, perror, ...
+#include <signal.h> // sigaction, SIGKILL
+#include <stdio.h> // fprintf, perror, ...
 #include <stdlib.h> // exit, strtol
 #include <string.h> // memset
+#include <sys/wait.h> // waitpid
 #include <unistd.h> // read, write
 
 // Use the `FATAL' macro for convenience.
