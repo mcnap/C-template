@@ -11,7 +11,7 @@ void fatal_usage(char const *const prog_name)
 int main(int const argc, char const *const *const argv)
 {
     char const text[20] = "Hello, world!\n";
-    inspect_char_buffer(text, sizeof(text));
+    inspect_char_buffer(text, sizeof text);
 
     return EXIT_SUCCESS;
 }
