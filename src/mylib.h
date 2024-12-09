@@ -165,7 +165,7 @@ void handler_sigchld(int const sig)
     pid_t pid;
     for (;;)
     {
-        pid = waitpid(0, NULL, WNOHANG);
+        pid = waitpid(-1, NULL, WNOHANG);
         if (pid > 0)
             continue;
         else if (0 == pid)
