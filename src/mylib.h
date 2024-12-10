@@ -201,3 +201,21 @@ void set_signal_handler(
     if (sigaction(signal_kind, &act, NULL))
         FATAL("sigaction");
 }
+
+void uninterrupted_millisleep(unsigned const ms)
+{
+    unsigned const s = ms / 1000;
+    unsigned const ns = (ms % 1000) * 1000000;
+
+    struct timespec t = {s, ns};
+    for (;;)
+    {
+        errno = 0;
+        if (0 == nanosleep(&t, &t))
+            break; // finished
+        if (EINTR == errno)
+            continue; // interrupted
+        FATAL("nanosleep");
+        // invalid argument (or any other error)
+    }
+}
