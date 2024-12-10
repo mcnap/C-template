@@ -142,26 +142,39 @@ void print_pid(void)
         FATAL("printf");
 }
 
-void handler_sigchld(int const sig)
+void send_signal(pid_t const pid, int const sig)
 {
-    // BEHAVIOR OF `waitpid' ===================================================
-    //
-    // Child process available?
-    // => Return its PID.
-    //
-    // Child process exists, but not yet available?
-    // => If `WNOHANG' was passed, return 0 immediately.
-    //    Otherwise, block the current thread until a child becomes available.
-    //
-    // No unwaited child process exists at all?
-    // => Set `errno' to `ECHILD'.
-    // => Return -1.
-    //
-    // Other error?
-    // => Set `errno' appropriately.
-    //    (In particular `EINTR' if the call was interrupted by a signal.)
-    // => Return -1.
+    if (-1 == pid)
+    {
+        fprintf(stderr, "Sending a signal everywhere is a bad idea! "
+        "If you meant to send the signal to each member of your process group, "
+        "pass `0' as the PID rather than `-1'.");
+        exit(EXIT_FAILURE);
+    }
     
+    if (kill(pid, sig))
+        FATAL("kill");
+}
+
+// BEHAVIOR OF `waitpid' ===================================================
+//
+// Child process available?
+// => Return its PID.
+//
+// Child process exists, but not yet available?
+// => If `WNOHANG' was passed, return 0 immediately.
+//    Otherwise, block the current thread until a child becomes available.
+//
+// No unwaited child process exists at all?
+// => Set `errno' to `ECHILD'.
+// => Return -1.
+//
+// Other error?
+// => Set `errno' appropriately.
+//    (In particular `EINTR' if the call was interrupted by a signal.)
+// => Return -1.
+void handler_sigchld(int const sig)
+{   
     pid_t pid;
     for (;;)
     {
