@@ -7,6 +7,7 @@
 #include <stdlib.h> // exit, strtol
 #include <string.h> // memset
 #include <sys/wait.h> // waitpid
+#include <time.h> // nanosleep
 #include <unistd.h> // read, write
 
 // Use the `FATAL' macro for convenience.
