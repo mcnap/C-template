@@ -1,49 +1,57 @@
-CMP = gcc
+CMP = g++
+
+# `-i' to format in-place
 FMT = clang-format -i
 
-# https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
-SAN_FLAGS  = -fsanitize=address,undefined
-CMP_FLAGS  = $(SAN_FLAGS) -g -pedantic -Wall -Werror
-LNK_FLAGS  = $(SAN_FLAGS)
-FMT_ENABLE = 1
+# Use `FMT = true' to disable formatting.
+# The `true' command is a shell built-in that discards its arguments and returns success.
 
-SRC_DIR   = src
-DST_DIR   = dst
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(DST_DIR)/%.o, $(SRC_FILES))
-HDR_FILES = $(wildcard $(SRC_DIR)/*.h)
-EXE_FILE  = $(DST_DIR)/main
+# https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
+FLAG_SAN  = -fsanitize=address,undefined
+FLAG_CMP  = $(FLAG_SAN) -g -MMD -pedantic -std=c++23 -Wall -Werror
+FLAG_LNK  = $(FLAG_SAN)
+
+EXTN_HDR = .hpp
+EXTN_SRC = .cpp
+EXTN_DEP = .cpp.d
+EXTN_OBJ = .cpp.o
+EXTN_EXE = .exe
+
+NAME_SRC = src
+NAME_DST = dst
+NAME_EXE = main
 
 # ==============================================================================
 
+PATH_SRC = $(wildcard $(NAME_SRC)/*$(EXTN_SRC))
+PATH_DEP = $(patsubst $(NAME_SRC)/%$(EXTN_SRC), $(NAME_DST)/%$(EXTN_DEP), $(PATH_SRC))
+PATH_OBJ = $(patsubst $(NAME_SRC)/%$(EXTN_SRC), $(NAME_DST)/%$(EXTN_OBJ), $(PATH_SRC))
+PATH_EXE  = $(NAME_DST)/$(NAME_EXE)$(EXTN_EXE)
+
 # A bare `make' command defaults to the first target.
-all: $(EXE_FILE)
+all: $(PATH_EXE)
 
-$(EXE_FILE): $(OBJ_FILES)
-	$(CMP) -o $(EXE_FILE) $(OBJ_FILES) $(LNK_FLAGS)
+# To obtain the final executable, link the object files.
+$(PATH_EXE): $(PATH_OBJ)
+	$(CMP) $(PATH_OBJ) -o $(PATH_EXE) $(FLAG_LNK)
 
-$(DST_DIR)/%.o: $(SRC_DIR)/%.c $(HDR_FILES)
-ifeq ($(FMT_ENABLE), 1)
-# `-i' to format in-place
-	clang-format -i $<
-endif
+# To obtain an object file, compile the corresponding source code file.
+$(NAME_DST)/%$(EXTN_OBJ): $(NAME_SRC)/%$(EXTN_SRC)
 # `$@' = this target name      (here: the object file)
 # `$<' = its first prerequsite (here: the source file)
-	$(CMP) -o $@ -c $< $(CMP_FLAGS)
+	$(FMT) $<
+	$(CMP) -c $< -o $@ $(FLAG_CMP)
 
-$(DST_DIR)/%.h:
-# This target is empty
-# but the recipe for object files lists it as a prerequisite.
-# This tell Make the following:
-# "Object files need to be regenerated if any header file changes."
+# Note: Currently, the headers are not formatted!
+-include $(PATH_DEP)
 
 clean:
 # "-f" to suppress "no such file" errors
-	rm -f $(EXE_FILE) $(OBJ_FILES)
+	rm -f $(PATH_EXE) $(PATH_OBJ) $(PATH_DEP)
 
-# Suppose our working directory contains a file inconviently named `clean'.
-# If we ran `make clean', Make would be tricked into thinking
-# that our request has already been handled.
-# Below is a solution to this problem.
-# "Phony" targets are always considered out-of-date.
+# Prevent unexpected behavior if files named `all' or `clean' exist.
 .PHONY: all clean
+
+# Disable built-in rules.
+MAKEFLAGS += --no-builtin-rules
+.SUFFIXES:
