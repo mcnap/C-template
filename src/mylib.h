@@ -2,9 +2,10 @@
 #include <ctype.h> // isspace
 #include <errno.h> // errno
 #include <limits.h> // INT_MAX, LONG_MAX
+#include <inttypes.h> // strtoumax, uintmax_t
 #include <signal.h> // sigaction, SIGKILL
 #include <stdio.h> // fprintf, perror, ...
-#include <stdlib.h> // exit, strtol
+#include <stdlib.h> // exit
 #include <string.h> // memset
 #include <sys/wait.h> // waitpid
 #include <time.h> // nanosleep
@@ -22,11 +23,10 @@ void fatal(
     else
         perror(func_name);
 
-    // Try to kill all processes whose process group ID is equal to ours.
-    kill(0, SIGKILL);
-
     fprintf(stderr, "%s:%d\n", file_name, line_number);
-    exit(EXIT_FAILURE);
+    
+    // Die, along with your children.
+    kill(0, SIGKILL);
 }
 
 #define FATAL(func_name) fatal(func_name, __FILE__, __LINE__);
@@ -67,37 +67,38 @@ void inspect_char_buffer(
 // Dan Moulding  : https://stackoverflow.com/a/6154614
 typedef enum
 {
-    STR2INT_SUCCESS,
-    STR2INT_OVERFLOW,
-    STR2INT_UNDERFLOW,
-    STR2INT_INCONVERTIBLE,
-} str2int_errno;
+    STR2UNUM_SUCCESS,
+    STR2UNUM_OVERFLOW,
+    STR2UNUM_UNDERFLOW,
+    STR2UNUM_INCONVERTIBLE,
+} str2unum_errno;
 
-str2int_errno str2int(int *dst, char const *src, unsigned short const base)
+str2unum_errno str2unum(uintmax_t *dst, char const *src, uintmax_t my_min, uintmax_t my_max)
 {
     char *after_num;
+    uintmax_t parsed;
 
     if (src == NULL || src[0] == '\0' || isspace(src[0]))
     {
         errno = EINVAL;
-        return STR2INT_INCONVERTIBLE;
+        return STR2UNUM_INCONVERTIBLE;
     }
 
     errno = 0;
-    long l = strtol(src, &after_num, base);
+    parsed = strtoumax(src, &after_num, 10);
 
-    if (l < INT_MIN || (errno == ERANGE && l == LONG_MIN))
-        return STR2INT_UNDERFLOW;
-    if (l > INT_MAX || (errno == ERANGE && l == LONG_MAX))
-        return STR2INT_OVERFLOW;
     if (*after_num != '\0')
-    {
         errno = EINVAL;
-        return STR2INT_INCONVERTIBLE;
-    }
+    if (errno == EINVAL)
+        return STR2UNUM_INCONVERTIBLE;
 
-    *dst = l;
-    return STR2INT_SUCCESS;
+    if (parsed < my_min || parsed > my_max)
+        errno = ERANGE;
+    if (errno == ERANGE)
+        return STR2UNUM_OVERFLOW;
+
+    *dst = parsed;
+    return STR2UNUM_SUCCESS;
 }
 
 // Based on: https://sop.mini.pw.edu.pl/pl/sop1/lab/l1/
