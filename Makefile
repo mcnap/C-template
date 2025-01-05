@@ -1,4 +1,4 @@
-CMP = g++
+CMP = gcc
 
 # `-i' to format in-place
 FMT = clang-format -i
@@ -8,13 +8,13 @@ FMT = clang-format -i
 
 # https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
 FLAG_SAN  = -fsanitize=address,undefined
-FLAG_CMP  = $(FLAG_SAN) -g -MMD -pedantic -std=c++23 -Wall -Werror
+FLAG_CMP  = $(FLAG_SAN) -g -MMD -pedantic -std=gnu99 -Wall -Werror
 FLAG_LNK  = $(FLAG_SAN)
 
-EXTN_HDR = .hpp
-EXTN_SRC = .cpp
-EXTN_DEP = .cpp.d
-EXTN_OBJ = .cpp.o
+EXTN_HDR = .h
+EXTN_SRC = .c
+EXTN_DEP = .d
+EXTN_OBJ = .o
 EXTN_EXE = .exe
 
 NAME_SRC = src
