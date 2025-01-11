@@ -2,5 +2,18 @@
 
 BasedOnStyle: Microsoft
 ColumnLimit: 80
+IndentWidth: 4
 
 AlignEscapedNewlines: Left
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: Custom
+BreakConstructorInitializers: BeforeComma
+BraceWrapping:
+  SplitEmptyFunction: false
+ExperimentalAutoDetectBinPacking: false
+IncludeBlocks: Merge
+InsertNewlineAtEOF: true
+SpaceBeforeCpp11BracedList: true
+SortIncludes: CaseInsensitive
